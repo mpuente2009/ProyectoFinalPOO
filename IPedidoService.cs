@@ -5,33 +5,15 @@ using System.Linq;
 
 namespace ProyectoFinalPOO
 {
-    public class PedidoService : IPedidoService
+    public interface IPedidoService
     {
-        public void CrearPedido(Pedido pedido)
-        {
-        }
+        void CrearPedido(Pedido pedido);
 
-        public void AgregarProducto(
+        void AgregarProducto(
             Pedido pedido,
-            Producto producto)
-        {
-            if (producto.Stock <= 0)
-            {
-                throw new Exception(
-                    $"No hay stock de {producto.Nombre}"
-                );
-            }
+            Producto producto
+        );
 
-            pedido.AgregarProducto(producto);
-
-            producto.Stock--;
-        }
-
-        public decimal CalcularTotal(Pedido pedido)
-        {
-            return pedido.Productos.Sum(
-                p => p.Precio
-            );
-        }
+        decimal CalcularTotal(Pedido pedido);
     }
 }

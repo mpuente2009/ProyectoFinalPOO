@@ -1,0 +1,38 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+
+namespace ProyectoFinalPOO
+{
+    public class PedidoService : IPedidoService
+    {
+        public void CrearPedido(Pedido pedido)
+        {
+
+        }
+
+        public void AgregarProducto(
+            Pedido pedido,
+            Producto producto)
+        {
+            if (producto.Stock <= 0)
+            {
+                throw new Exception(
+                    $"No hay stock de {producto.Nombre}"
+                );
+            }
+
+            pedido.AgregarProducto(producto);
+
+            producto.Stock--;
+        }
+
+        public decimal CalcularTotal(Pedido pedido)
+        {
+            return pedido.Productos.Sum(
+                p => p.Precio
+            );
+        }
+    }
+}

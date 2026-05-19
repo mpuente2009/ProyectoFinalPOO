@@ -2,21 +2,29 @@
 using System.Collections.Generic;
 using System.Text;
 
+using System.Collections.Generic;
+
 namespace ProyectoFinalPOO
 {
-    public class Producto
+    public class Pedido
     {
-        public string Nombre { get; set; }
+        public int Id { get; set; }
 
-        public decimal Precio { get; set; }
+        public Cliente Cliente { get; set; }
 
-        public int Stock { get; set; }
+        private List<Producto> productos = new();
 
-        public Producto(string nombre, decimal precio, int stock)
+        public IReadOnlyList<Producto> Productos => productos;
+
+        public Pedido(int id, Cliente cliente)
         {
-            Nombre = nombre;
-            Precio = precio;
-            Stock = stock;
+            Id = id;
+            Cliente = cliente;
+        }
+
+        public void AgregarProducto(Producto producto)
+        {
+            productos.Add(producto);
         }
     }
 }

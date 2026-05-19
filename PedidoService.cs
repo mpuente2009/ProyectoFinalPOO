@@ -5,8 +5,17 @@ using System.Linq;
 
 namespace ProyectoFinalPOO
 {
+   
+    
     public class PedidoService : IPedidoService
     {
+
+        public event EventHandler<PedidoEventArgs>
+        PedidoCreado;
+
+        public event EventHandler<StockEventArgs>
+        StockActualizado;
+
         public void CrearPedido(Pedido pedido)
         {
 

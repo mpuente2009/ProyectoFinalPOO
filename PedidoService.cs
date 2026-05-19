@@ -15,9 +15,13 @@ namespace ProyectoFinalPOO
 
         public event EventHandler<StockEventArgs>
         StockActualizado;
-
         public void CrearPedido(Pedido pedido)
         {
+            Console.WriteLine(">>> Creando pedido en el servicio real");
+
+            Console.WriteLine($"Pedido ID: {pedido.Id}");
+            Console.WriteLine($"Cliente: {pedido.Cliente.Nombre}");
+            Console.WriteLine($"Productos: {pedido.Productos.Count}");
 
         }
 

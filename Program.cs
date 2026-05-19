@@ -1,4 +1,6 @@
-﻿using ProyectoFinalPOO;
+﻿using Castle.DynamicProxy;
+using ProyectoFinalPOO;
+using ProyectoFinalPOO.AOP;
 
 List<Producto> productos = new()
 {
@@ -7,11 +9,12 @@ List<Producto> productos = new()
     new Producto("Gaseosa", 8, 20)
 };
 
+// ==========================
+// LÓGICA FUNCIONAL (OK)
+// ==========================
+
 var productosCostosos =
-    CalculadoraPedidos
-        .ObtenerProductosCostosos(
-            productos,
-            20);
+    CalculadoraPedidos.ObtenerProductosCostosos(productos, 20);
 
 foreach (var nombre in productosCostosos)
 {
@@ -19,23 +22,53 @@ foreach (var nombre in productosCostosos)
 }
 
 decimal total =
-    CalculadoraPedidos
-        .CalcularTotalProductos(
-            productos);
+    CalculadoraPedidos.CalcularTotalProductos(productos);
 
-Console.WriteLine(
-    $"Total: {total}"
-);
+Console.WriteLine($"Total: {total}");
 
 decimal descuento =
-    CalculadoraPedidos
-        .EjecutarOperacion(
-            total,
-            t => t * 0.9m
-        );
+    CalculadoraPedidos.EjecutarOperacion(total, t => t * 0.9m);
 
-Console.WriteLine(
-    $"Con descuento: {descuento}"
-);
+Console.WriteLine($"Con descuento: {descuento}");
 
 
+// ==========================
+// AOP + PROXY
+// ==========================
+
+var generator = new ProxyGenerator();
+
+// servicio real
+IPedidoService servicioReal = new PedidoService();
+
+// interceptor
+var interceptor = new SimpleInterceptor();
+
+// proxy
+IPedidoService servicioProxy =
+    generator.CreateInterfaceProxyWithTarget(
+        servicioReal,
+        interceptor
+    );
+
+
+// ==========================
+// CREAR PEDIDO (CORREGIDO)
+// ==========================
+
+// cliente de prueba (ajusta si tu constructor es distinto)
+var cliente = new Cliente("Miguel");
+
+var pedido = new Pedido(1, cliente);
+
+// agregar productos correctamente (según tu diseño)
+foreach (var producto in productos)
+{
+    pedido.AgregarProducto(producto);
+}
+
+// ==========================
+// LLAMADA CON AOP
+// ==========================
+
+servicioProxy.CrearPedido(pedido);

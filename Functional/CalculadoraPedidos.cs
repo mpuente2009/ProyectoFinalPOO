@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProyectoFinalPOO.Functional;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -45,6 +46,31 @@ namespace ProyectoFinalPOO
                 Func<decimal, decimal> operacion)
         {
             return operacion(valor);
+        }
+
+        // Aggregate: acumula un string con los nombres de los productos
+        public static string ResumirNombres(List<Producto> productos)
+        {
+            return productos.Aggregate(
+                "",
+                (acumulado, p) => acumulado == ""
+                    ? p.Nombre
+                    : acumulado + ", " + p.Nombre
+            );
+        }
+
+        // Función pura que retorna un record inmutable con el resumen del pedido
+        public static ResumenPedido GenerarResumen(Pedido pedido, Func<decimal, decimal> aplicarDescuento)
+        {
+            decimal total = pedido.Productos.Sum(p => p.Precio);
+
+            return new ResumenPedido(
+                pedido.Id,
+                pedido.Cliente.Nombre,
+                pedido.Productos.Count,
+                total,
+                aplicarDescuento(total)
+            );
         }
     }
 }

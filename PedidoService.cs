@@ -1,7 +1,10 @@
-﻿using System;
+﻿using ProyectoFinalPOO.Eventos;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
+using System.Text;
+
+
 
 namespace ProyectoFinalPOO
 {
@@ -10,35 +13,36 @@ namespace ProyectoFinalPOO
     public class PedidoService : IPedidoService
     {
 
-        public event EventHandler<PedidoEventArgs>
-        PedidoCreado;
-
-        public event EventHandler<StockEventArgs>
-        StockActualizado;
+        public event EventHandler<PedidoCreadoEventArgs> PedidoCreado;
+        public event EventHandler<StockActualizadoEventArgs> StockActualizado;
         public void CrearPedido(Pedido pedido)
         {
-            Console.WriteLine(">>> Creando pedido en el servicio real");
+            Console.WriteLine($">>> Creando pedido #{pedido.Id} para {pedido.Cliente.Nombre}");
 
-            Console.WriteLine($"Pedido ID: {pedido.Id}");
-            Console.WriteLine($"Cliente: {pedido.Cliente.Nombre}");
-            Console.WriteLine($"Productos: {pedido.Productos.Count}");
+            // Disparar evento PedidoCreado
+            PedidoCreado?.Invoke(this, new PedidoCreadoEventArgs(
+                pedido.Id,
+                pedido.Cliente.Nombre,
+                pedido.Productos.Count
+            ));
 
         }
 
-        public void AgregarProducto(
-            Pedido pedido,
-            Producto producto)
+        public void AgregarProducto(Pedido pedido, Producto producto)
         {
             if (producto.Stock <= 0)
-            {
-                throw new Exception(
-                    $"No hay stock de {producto.Nombre}"
-                );
-            }
+                throw new Exception($"No hay stock de {producto.Nombre}");
 
+            int stockAnterior = producto.Stock;
             pedido.AgregarProducto(producto);
-
             producto.Stock--;
+
+            // Disparar evento StockActualizado
+            StockActualizado?.Invoke(this, new StockActualizadoEventArgs(
+                producto.Nombre,
+                stockAnterior,
+                producto.Stock
+            ));
         }
 
         public decimal CalcularTotal(Pedido pedido)

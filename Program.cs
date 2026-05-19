@@ -1,7 +1,32 @@
-﻿using Castle.DynamicProxy;
-using ProyectoFinalPOO;
-using ProyectoFinalPOO.AOP;
+﻿using ProyectoFinalPOO;
+using ProyectoFinalPOO.Functional;
+using ProyectoFinalPOO.WindsorConfig;
 
+// ========================
+// CONTENEDOR WINDSOR (IoC)
+// ========================
+var container = WindsorContainerConfig.Build();
+
+IPedidoService pedidoService = container.Resolve<IPedidoService>();
+IPagoService pagoService = container.Resolve<IPagoService>();
+
+
+// Suscribirse a eventos del servicio real
+var servicioReal = container.Resolve<PedidoService>();
+
+servicioReal.PedidoCreado += (sender, e) =>
+{
+    Console.WriteLine($"[EVENTO] Pedido creado — ID: {e.PedidoId} | Cliente: {e.NombreCliente} | Productos: {e.CantidadProductos}");
+};
+
+servicioReal.StockActualizado += (sender, e) =>
+{
+    Console.WriteLine($"[EVENTO] Stock actualizado — {e.NombreProducto}: {e.StockAnterior} -> {e.StockNuevo}");
+};
+
+// ========================
+// LÓGICA FUNCIONAL
+// ========================
 List<Producto> productos = new()
 {
     new Producto("Hamburguesa", 25, 10),
@@ -9,66 +34,39 @@ List<Producto> productos = new()
     new Producto("Gaseosa", 8, 20)
 };
 
-// ==========================
-// LÓGICA FUNCIONAL (OK)
-// ==========================
-
-var productosCostosos =
-    CalculadoraPedidos.ObtenerProductosCostosos(productos, 20);
-
+var productosCostosos = CalculadoraPedidos.ObtenerProductosCostosos(productos, 20);
 foreach (var nombre in productosCostosos)
-{
     Console.WriteLine(nombre);
-}
 
-decimal total =
-    CalculadoraPedidos.CalcularTotalProductos(productos);
+decimal total = CalculadoraPedidos.CalcularTotalProductos(productos);
+decimal descuento = CalculadoraPedidos.EjecutarOperacion(total, t => t * 0.9m);
+Console.WriteLine($"Total: {total}  |  Con descuento: {descuento}");
 
-Console.WriteLine($"Total: {total}");
+// Aggregate
+string nombres = CalculadoraPedidos.ResumirNombres(productos);
+Console.WriteLine($"Productos: {nombres}");
 
-decimal descuento =
-    CalculadoraPedidos.EjecutarOperacion(total, t => t * 0.9m);
-
-Console.WriteLine($"Con descuento: {descuento}");
-
-
-// ==========================
-// AOP + PROXY
-// ==========================
-
-var generator = new ProxyGenerator();
-
-// servicio real
-IPedidoService servicioReal = new PedidoService();
-
-// interceptor
-var interceptor = new SimpleInterceptor();
-
-// proxy
-IPedidoService servicioProxy =
-    generator.CreateInterfaceProxyWithTarget(
-        servicioReal,
-        interceptor
-    );
-
-
-// ==========================
-// CREAR PEDIDO (CORREGIDO)
-// ==========================
-
-// cliente de prueba (ajusta si tu constructor es distinto)
+// ========================
+// CREAR Y PROCESAR PEDIDO
+// ========================
 var cliente = new Cliente("Miguel");
-
 var pedido = new Pedido(1, cliente);
 
-// agregar productos correctamente (según tu diseño)
 foreach (var producto in productos)
-{
     pedido.AgregarProducto(producto);
-}
 
-// ==========================
-// LLAMADA CON AOP
-// ==========================
+// record inmutable
+ResumenPedido resumen = CalculadoraPedidos.GenerarResumen(pedido, t => t * 0.9m);
+Console.WriteLine($"Resumen: Pedido #{resumen.PedidoId} | Cliente: {resumen.NombreCliente} | Total: {resumen.Total} | Con descuento: {resumen.TotalConDescuento}");
 
-servicioProxy.CrearPedido(pedido);
+// Windsor invoca los interceptores automáticamente
+// Los eventos se disparan dentro de CrearPedido
+pedidoService.CrearPedido(pedido);
+
+// Demostrar StockActualizado agregando un producto con el servicio real
+servicioReal.AgregarProducto(pedido, new Producto("Jugo", 12, 8));
+
+// ========================
+// LIBERAR CONTENEDOR
+// ========================
+container.Dispose();

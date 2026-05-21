@@ -64,7 +64,7 @@ Console.WriteLine($"Resumen: Pedido #{resumen.PedidoId} | Cliente: {resumen.Nomb
 pedidoService.CrearPedido(pedido);
 
 // Demostrar StockActualizado agregando un producto con el servicio real
-servicioReal.AgregarProducto(pedido, new Producto("Jugo", 12, 8));
+servicioReal.AgregarProducto(pedido, new Producto("Hamburguesa", 12, 8));
 
 // ========================
 // LIBERAR CONTENEDOR
